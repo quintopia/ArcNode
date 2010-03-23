@@ -1,0 +1,44 @@
+ArcNode
+
+Project begun in 2006 by David Rutter
+Coming to the public in 2010
+
+The purpose of this project is to create a usable
+data structure in Java for the purpose of modelling
+graphs--the graph-theoretic kind.  This is intended 
+to be used as a library for network-related research.
+
+This project is in flux and probably will be for
+a while unless more people get interested.  Thus,
+unless a lot of interest is shown, there will be no
+release schedule and no guarantees of stability of any
+commit.  After a lot of refactoring, when the prime
+author is satisfied with the functionality and
+stability of /some/ commit, the project will be made
+more organized and official.
+
+At present, the codebase contains the following:
+-A data structure for modeling a subgraph of a digraph
+ as a collection of nodes and the arcs between them
+-Methods for saving and loading these graphs to and 
+ from files, in edge-list format
+-A collection of basic algorithms for graphs, including
+--Shortest path-finding by Dijkstra's Algorithm
+---To ensure Dijkstra's runs quickly, this codebase 
+   also contains an implementation of a Fibonacci Heap
+--Fewest hops path-finding by BFS
+--s,t-connectivity-testing and connected component
+  finding by DFS
+--Various Metrics used for measuring the properties of
+  networks, including degree distributions, distance
+  distributions, likelihood, betweenness centrality,
+  and others
+--Methods for generating random graphs obeying various
+  standard models, including G(n,p), G(n,p) with
+  connectedness guarantee, uniform random spanning 
+  subtrees, uniform trees on k nodes, and uniform
+  simple graphs obeying a specified degree sequence,
+  with or without connectedness guarantee.
+
+Plans for the future can be found on the to-do list
+  (separate)

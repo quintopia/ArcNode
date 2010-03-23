@@ -1,0 +1,12 @@
+Graph classes TO-DO list:
+Remove all edge/vertex auto-deletion code (so that Graph represents any subgraph)
+Add outdegree function to Graph (size of cut)
+Also outweight function (capacity of cut)
+Add function to trim a graph to the subgraph it purports to contain (in linear time)
+replace node/edge iterators with just returning the actual set, iterator code with new fors
+incorporate matrix package; generate adj matrix, incidence list
+
+Far future:
+Edmonds algorithm
+Planarity test/generate embeddings
+Default code for displaying graphs (svg or just a Canvas)
