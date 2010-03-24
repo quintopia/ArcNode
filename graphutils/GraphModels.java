@@ -5,11 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.ListIterator;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 public final class GraphModels {
 	public static Graph connectedGnp(int n, double p) {
@@ -65,102 +61,41 @@ public final class GraphModels {
 		return out;
 	}
 	
-	/*public static Graph connectedByDegree(Hashtable<Integer,Integer> degreeDist) throws Exception {
-		Graph out = new Graph();
-		Set<Integer> ks = degreeDist.keySet();
-		Iterator<Integer> d = ks.iterator();
-		while (d.hasNext()) {
-			out.addNode(d.next());
-		}
-		ArrayList<Component> components = new ArrayList<Component>();
-		ArrayList<Component> hdcomps = new ArrayList<Component>();
-		ArrayList<Component> comp1s = new ArrayList<Component>();
-		ArrayList<GraphNode> u = new ArrayList<GraphNode>();
-		Iterator<GraphNode> i = out.getNodeIterator();
-		while(i.hasNext()) {
-				
-				GraphNode gg = (GraphNode)i.next();
-				Component c = new Component();
-				c.add(gg);
-				components.add(c);
-				if (degreeDist.get(gg.getId())>1) hdcomps.add(c); 
-				if (degreeDist.get(gg.getId())==1) comp1s.add(c);
-				if (degreeDist.get(gg.getId())==0) throw new Exception("Uhh...bad degree distribution: "+gg.getId());
-				u.add(gg);
-			
-		}
-		
-		while (components.size()>2) {
-			Component c;
-			if (comp1s.size()>0) {
-				int choice =(int)Math.floor(Math.random()*comp1s.size());
-				c = comp1s.get(choice);
-				comp1s.remove(c);
-			} else {
-				int choice =(int)Math.floor(Math.random()*components.size());
-				c = components.get(choice);
-				hdcomps.remove(c);
-			}
-			if (!c.isConnected()) throw new Exception("disconnected component");
-			components.remove(c);
-			GraphNode sel = c.randomNode(degreeDist);
-			int choice =(int)Math.floor(Math.random()*hdcomps.size());
-			Component c2 = hdcomps.get(choice);
-			GraphNode sel2 = c2.randomNode(degreeDist);
-			sel.addEdge(sel2,1);
-			sel2.addEdge(sel,1);
-			int sc = degreeDist.get(sel.getId())-1;
-			degreeDist.put(sel.getId(),sc);
-			int sc2 = degreeDist.get(sel2.getId())-1;
-			degreeDist.put(sel2.getId(),sc2);
-			c2.add(c);
-			if (c2.degree(degreeDist)<2) {
-				hdcomps.remove(c2);
-				if (c2.degree(degreeDist)==1) comp1s.add(c2);
-			}
-		}
-		//sanity check
-		Component c = components.get(0);
-		Component c1 = components.get(1);
-		GraphNode sel = c.randomNode(degreeDist);
-		GraphNode sel2 = c1.randomNode(degreeDist);
-		sel.addEdge(sel2,1);
-		sel2.addEdge(sel,1);
-		int sc = degreeDist.get(sel.getId())-1;
-		degreeDist.put(sel.getId(),sc);
-		int sc2 = degreeDist.get(sel2.getId())-1;
-		degreeDist.put(sel2.getId(),sc2);
-		c.add(c1);
-		while (sum(degreeDist.values())>1) {
-			GraphNode gn1 = c.randomNode(degreeDist);
-			degreeDist.put(gn1.getId(), degreeDist.get(gn1.getId())-1);
-			GraphNode gn2 = c.randomNode(degreeDist);
-			degreeDist.put(gn2.getId(), degreeDist.get(gn2.getId())-1);
-			gn1.addEdge(gn2, 1);
-			gn2.addEdge(gn1, 1);
-		}
-		Iterator<GraphNode> l = out.getNodeIterator();
-		while (l.hasNext()) {
-			GraphNode gn = l.next();
-			if (degreeDist.get(gn.getId())!=0) 
-				throw new Exception("some node's degree req not met:"+gn.getId()+","+degreeDist.get(gn.getId()));
-		}
-		
-		return out;
-	}*/
-	
+	/*
+	 * Viger-Latapy's final heuristic exploiting power law
+	 * degree sequences to achieve loglinear running time
+	 */
 	public static Graph connectedByDegree(Hashtable<Integer,Integer> degreeDist) throws InvalidDegreeSeqException,GraphNotConnectedException {
-		Graph out = detByDegree(degreeDist,true);
+		Graph out = detByDegree(degreeDist);
+		
+		//need to connect result
+		out = makeConnected(out);
+		System.out.println(Connectivity.isConnected(out));
+		//now randomize
+		double times = out.numEdges()/20;
+		double k = 2.4;
+		
+		int swapstoadd = 0;
+		for (int i=0;i<out.numEdges();i+=swapstoadd) {
+			Graph temp = edgeSwitch(out,(int)Math.min(1,Math.floor(times)),(int)k);
+			boolean ok = Connectivity.isConnected(temp);
+			if (ok) {
+				swapstoadd=(int)Math.min(1,Math.floor(times));
+				if ((k+10.0)*times>2.5*out.numEdges()) k/=1.03;
+				else times*=2;
+				out = temp;
+			} else {
+				temp = null;
+				swapstoadd=0;
+				k*=1.35;
+			}
+		}
 		return out;
 	}
 	
 	public static Graph byDegree(Hashtable<Integer,Integer> degreeDist) throws InvalidDegreeSeqException {
 		Graph out = null;
-		try {
-		out = detByDegree(degreeDist,false);
-		} catch (GraphNotConnectedException gnce) {
-			//this exception is only thrown when second argument is true
-		}
+		out = detByDegree(degreeDist);
 		out = edgeSwitch(out,out.numEdges(),0);
 		return out;
 	}
@@ -174,7 +109,7 @@ public final class GraphModels {
 		return count;
 	}
 	/* An implementation of Havel-Hakimi */
-	private static Graph detByDegree(Hashtable<Integer,Integer> degrees, boolean ensureConnected) throws InvalidDegreeSeqException,GraphNotConnectedException {
+	private static Graph detByDegree(Hashtable<Integer,Integer> degrees) throws InvalidDegreeSeqException {
 		Graph out = new Graph();
 		Set<Integer> ks = degrees.keySet();
 		ArrayList<Integer> list = new ArrayList<Integer>();
@@ -189,7 +124,7 @@ public final class GraphModels {
 			}
 			list.add(id);
 			if (degrees.get(id)>degrees.size()-1||degrees.get(id)<0) throw new InvalidDegreeSeqException();
-			if (ensureConnected&&degrees.get(id)<1) throw new GraphNotConnectedException();
+			
 			if (degrees.get(id)%2==1) oddcount++;
 		}
 		if (oddcount%2==1) throw new InvalidDegreeSeqException();
@@ -206,7 +141,7 @@ public final class GraphModels {
 			}
 			list.remove(0);
 		}
-		if (ensureConnected&&!(new Connectivity(out).isConnected())) throw new GraphNotConnectedException();
+		
 		return out;
 	}
 	
@@ -304,5 +239,57 @@ public final class GraphModels {
 		}
 		out.addNEdge(k-2, 2*k-3, 1);
 		return out;
+	}
+	
+	private static Graph makeConnected(Graph g) throws GraphNotConnectedException {
+		//check there are enough edges to connect
+		if (g.numEdges()/2+1<g.size()) throw new GraphNotConnectedException();
+		//get connected components
+		ArrayList<Graph> components = new Connectivity(g).getAllComponents();
+		ArrayList<Graph> fat = new ArrayList<Graph>();
+		ArrayList<Graph> tree = new ArrayList<Graph>();
+		for (Graph o:components) {
+			if (o.numEdges()>2*o.size()-2)
+				fat.add(o);
+			else
+				tree.add(o);
+		}
+		while (components.size()>1) {
+		//find one with extra edges
+			Graph fatGraph = fat.remove(0);
+			components.remove(fatGraph);
+		//find one with no extra edges if it exists
+			Graph other;
+			if (tree.size()>0)
+				other = tree.remove(0);
+			else
+				other = fat.remove(0);
+			components.remove(other);
+		//find a biconnected edge in the fat one
+			GraphNode[] pair = new Connectivity(fatGraph).getBiconnectedEdge();
+			GraphNode f1 = pair[0];
+			GraphNode f2 = pair[1];
+		//take any edge in the other
+			GraphNode o1 = other.getNode();
+			GraphNode o2 = o1.getRandomEdge().getTarget();
+		//remove them from their graphs
+			f1.deleteEdgeByTargetId(f2.getId());
+			f2.deleteEdgeByTargetId(f1.getId());
+			o1.deleteEdgeByTargetId(o2.getId());
+			o2.deleteEdgeByTargetId(o1.getId());
+		//combine the graphs
+			Graph newGraph = Graph.unionById(fatGraph, other);
+		//add in the other two edges
+			newGraph.addNEdge(f1.getId(), o1.getId(), 1);
+			newGraph.addNEdge(f2.getId(), o2.getId(), 1);
+		//put component back in relevant lists
+			if (newGraph.numEdges()>2*newGraph.size()-2) {
+				fat.add(newGraph);
+			} else {
+				tree.add(newGraph);
+			}
+			components.add(newGraph);
+		}
+		return components.get(0);
 	}
 }

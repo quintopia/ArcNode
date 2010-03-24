@@ -24,9 +24,9 @@ public class Graph {
 		if (source != null && target != null && nodes.contains(source)
 				&& nodes.contains(target) && source.getEdgeByTargetId(target.getId())==null) {
 			source.addEdge(target, weight);
-			
-		return true;
-	} else return false;
+
+			return true;
+		} else return false;
 	}
 
 	public boolean addEdge(GraphNode source, GraphNode target, double weight,
@@ -51,7 +51,7 @@ public class Graph {
 					"A node already exists with that ID.");
 		}
 		nodes.put(new Integer(g.getId()), g);
-		
+
 		if (g.getId() >= auto_id)
 			auto_id = g.getId() + 1;
 		return g;
@@ -62,7 +62,7 @@ public class Graph {
 	}
 
 	public GraphNode addNode(Object o, double x, double y, int id)
-			throws IdCollisionException {
+	throws IdCollisionException {
 		GraphNode out = new GraphNode(o, x, y, id);
 		if (nodes.containsKey(new Integer(id))) {
 			throw new IdCollisionException(
@@ -71,7 +71,7 @@ public class Graph {
 		if (id >= auto_id)
 			auto_id = id + 1;
 		nodes.put(new Integer(id), out);
-		
+
 		return out;
 	}
 
@@ -79,25 +79,25 @@ public class Graph {
 		GraphNode out = new GraphNode(id);
 		if (nodes.containsKey(new Integer(id))) {
 			throw new IdCollisionException(
-					"A node already exists with that ID.");
+			"A node already exists with that ID.");
 		}
 		nodes.put(new Integer(id), out);
-		
+
 		if (id >= auto_id)
 			auto_id = id + 1;
 		return out;
 	}
-	
+
 	public GraphNode addNode() {
 		boolean success = false;
 		GraphNode out = null;
 		while(!success) {
-		try {
-			out = addNode(auto_id++);
-			success = true;
-		} catch (IdCollisionException ide) {
-			//keep on tryin'!
-		}
+			try {
+				out = addNode(auto_id++);
+				success = true;
+			} catch (IdCollisionException ide) {
+				//keep on tryin'!
+			}
 		}
 		return out;
 	}
@@ -115,7 +115,7 @@ public class Graph {
 			}
 		}
 	}
-	
+
 	public void addAll(Collection<GraphNode> c) throws IdCollisionException {
 		Iterator<GraphNode> i = c.iterator();
 		while (i.hasNext()) {
@@ -127,13 +127,13 @@ public class Graph {
 		return (double) numEdges() / size();
 	}
 
-	
-	
-	
-	
 
-	
-	
+
+
+
+
+
+
 	public static Graph completeGraph(int n) {
 		Graph out = new Graph();
 		out.addNodes(n);
@@ -155,7 +155,7 @@ public class Graph {
 		}
 		return out;
 	}
-	
+
 
 	public boolean contains(GraphNode gn) {
 		return nodes.contains(gn);
@@ -189,7 +189,7 @@ public class Graph {
 		}
 		return out;
 	}
-	
+
 
 	public int degree(GraphNode gn) {
 		if (nodes.contains(gn)) {
@@ -198,13 +198,11 @@ public class Graph {
 			while (l.hasNext())
 				if (nodes.contains(l.next().getTarget()))
 					count++;
-				else
-					l.remove();
 			return count;
 		} else
 			return 0;
 	}
-	
+
 	public int degree(Graph g) {
 		Iterator<GraphNode> i = g.getNodeIterator();
 
@@ -212,18 +210,15 @@ public class Graph {
 		while (i.hasNext()) {
 			GraphNode gn = i.next();
 			if (nodes.contains(gn)) {
-			ListIterator<GraphEdge> l = gn.getEdgeIterator();
+				ListIterator<GraphEdge> l = gn.getEdgeIterator();
 
-			while (l.hasNext()) {
-				GraphEdge e = l.next();
-				if (nodes.contains(e.getTarget()))
-					if (!g.nodes.contains(e.getTarget()))
+				while (l.hasNext()) {
+					GraphEdge e = l.next();
+					if (nodes.contains(e.getTarget())
+							&&!g.nodes.contains(e.getTarget()))
 						count++;
-				else
-					l.remove();
+				}
 			}
-		} else
-			g.removeNode(gn);
 		}
 		return count;
 	}
@@ -247,7 +242,7 @@ public class Graph {
 		}
 		return dist;
 	}
-	
+
 	public Hashtable<Integer,Integer> getDegreeTable() {
 		Iterator<GraphNode> i = getNodeIterator();
 		Hashtable<Integer,Integer> out = new Hashtable<Integer,Integer>();
@@ -257,16 +252,16 @@ public class Graph {
 		}
 		return out;
 	}
-	
+
 	public double getEdgeDensity() {
 		return numEdges()/(size()*(size()-1.));
 	}
-	
-	
-	
 
-	
-	
+
+
+
+
+
 
 
 	/**
@@ -316,13 +311,13 @@ public class Graph {
 		int nodenum = (int) Math.floor(Math.random() * size());
 		return getNodeArray()[nodenum];
 	}
-	
+
 	public GraphEdge getRandomEdge() {
 		/*this is trickier than previously thought, since we have to choose
 		  a random node that isn't isolated somehow*/
 		return getRandomNodeByDegree().getRandomEdge();
 	}
-	
+
 	public GraphNode getRandomConnectedNode() {
 		Iterator<GraphNode> iter= getNodeIterator();
 		ArrayList<GraphNode> choices = new ArrayList<GraphNode>();
@@ -334,9 +329,9 @@ public class Graph {
 		GraphNode[] ca = new GraphNode[choices.size()];
 		return choices.toArray(ca)[(int)Math.floor(Math.random()*choices.size())];
 	}
-	
+
 	public GraphNode getRandomNodeByDegree() {
-		
+
 		int choice = (int)Math.floor(Math.random()*numEdges()+1);
 		Iterator<GraphNode> i = getNodeIterator();
 		GraphNode out = null;
@@ -347,23 +342,23 @@ public class Graph {
 		}
 		return out;
 	}
-	
 
 
 
-	
 
 
-	
-	
+
+
+
+
 
 	/**
 	 * @return whether this graph is connected
 	 */
-	
-	
-	
-	
+
+
+
+
 
 
 
@@ -388,7 +383,7 @@ public class Graph {
 		}
 		return min;
 	}
-	
+
 
 	public int numEdges() {
 		int count = 0;
@@ -460,19 +455,10 @@ public class Graph {
 	 */
 	public GraphNode removeNode(int id) {
 		GraphNode gn = nodes.remove(new Integer(id));
-		
+
 		return gn;
 	}
 
-	/**
-	 * Like getconnected component, except that nodes are removed from the graph
-	 * as they are encountered and are moved rather than copied to the output
-	 * graph
-	 * 
-	 * @param gn
-	 *            a node in the connected component
-	 * @return a the connected component
-	 */
 
 
 	/**
@@ -481,8 +467,8 @@ public class Graph {
 	public int size() {
 		return nodes.size();
 	}
-	
-	
+
+
 
 
 	/**
@@ -516,7 +502,7 @@ public class Graph {
 							// redirect it to the pre-existing node
 							e.setTarget(nt);
 						}// all other edges point to nodes that will
-							// eventually be added
+						// eventually be added
 					}
 				} catch (IdCollisionException e) {
 					// doesn't happen
@@ -550,7 +536,7 @@ public class Graph {
 		}
 		return out;
 	}
-	
+
 	public static Graph unionByRandomCut(Graph left, Graph right, double edgeDensity) {
 		Iterator<GraphNode> i = left.getNodeIterator();
 		Graph out = Graph.deepCopy(left);
@@ -567,15 +553,15 @@ public class Graph {
 		}
 		int shift = 0;
 		if (id2<=id) shift = id-id2+1;
-			i = right.getNodeIterator();
-			while (i.hasNext()) {
-				GraphNode g = i.next();
-				try {
+		i = right.getNodeIterator();
+		while (i.hasNext()) {
+			GraphNode g = i.next();
+			try {
 				out.addNode(g.getId()+shift);
-				} catch (IdCollisionException ide) {
-					//can't happen
-				}
+			} catch (IdCollisionException ide) {
+				//can't happen
 			}
+		}
 		i = right.getNodeIterator();
 		while (i.hasNext()) {
 			GraphNode gn = i.next();
@@ -638,15 +624,15 @@ public class Graph {
 		}
 		int shift = 0;
 		if (id2<=id) shift = id-id2+1;
-			i = right.getNodeIterator();
-			while (i.hasNext()) {
-				GraphNode g = i.next();
-				try {
+		i = right.getNodeIterator();
+		while (i.hasNext()) {
+			GraphNode g = i.next();
+			try {
 				out.addNode(g.getId()+shift);
-				} catch (IdCollisionException ide) {
-					//can't happen
-				}
+			} catch (IdCollisionException ide) {
+				//can't happen
 			}
+		}
 		i = right.getNodeIterator();
 		while (i.hasNext()) {
 			GraphNode gn = i.next();
@@ -662,15 +648,15 @@ public class Graph {
 			degreeDist[p]-=nodelist.get(p).numEdges();
 			if (degreeDist[p]<0) degreeDist[p]=0;
 		}
-		
+
 		for (int p=0;p<degreeDist.length;p++) {
 			GraphNode g = nodelist.get(p);
 			for (int q=0;q<degreeDist.length;p++) {
 				if (g.getEdgeByTargetId(nodelist.get(q).getId())!=null) continue;
-				
+
 			}
 		}
-		
+
 		return null;
 	}
 }
